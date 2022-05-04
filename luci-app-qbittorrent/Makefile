@@ -18,8 +18,7 @@ LUCI_DEPENDS:= \
 define Package/$(PKG_NAME)/config
 	choice
 		prompt "Build Version Selection"
-		default PACKAGE_luci-app-qbittorrent_static if arm||aarch64||x86_64
-		default PACKAGE_luci-app-qbittorrent_dynamic if !(arm||aarch64||x86_64)
+		default PACKAGE_luci-app-qbittorrent_dynamic
 
 		config PACKAGE_luci-app-qbittorrent_static
 			bool "Static Build"
