@@ -7,12 +7,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qbittorrent
-PKG_VERSION:=4.4.1
+PKG_VERSION:=4.4.2
 PKG_RELEASE=1
 
 PKG_SOURCE:=qBittorrent-release-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/qbittorrent/qBittorrent/tar.gz/release-4.4.1?
-PKG_HASH:=144a609514a7b516e65c4a4e32e49529b5e3949a713daf86332cd95867c991ba
+PKG_SOURCE_URL:=https://codeload.github.com/qbittorrent/qBittorrent/tar.gz/release-$(PKG_VERSION)?
+PKG_HASH:=f9406eb982a4b8a084341fb0bc30bd8b50babe5dcf4197204ab407b06e20e8a3
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/qBittorrent-release-$(PKG_VERSION)
 
@@ -20,25 +20,28 @@ PKG_LICENSE:=GPL-2.0+
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:qbittorrent:qbittorrent
 
-PKG_BUILD_DEPENDS:=qttools
+PKG_BUILD_DEPENDS:=qttools/host boost
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
 PKG_USE_MIPS16:=0
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/qbittorrent
 	SECTION:=net
 	CATEGORY:=Network
 	SUBMENU:=BitTorrent
-	DEPENDS:=+libgcc +libstdcpp \
+	DEPENDS:=+USE_GLIBC:librt +USE_GLIBC:libpthread +libgcc +libstdcpp \
 		+rblibtorrent \
 		+libopenssl \
-		+qt5-core \
-		+qt5-network \
-		+qt5-sql \
-		+qt5-xml \
+		+libqt6core \
+		+libqt6network \
+		+libqt6network-tlsbackend-openssl \
+		+libqt6sql \
+		+libqt6sql-sqlite \
+		+libqt6xml \
 		+zlib
 	TITLE:=bittorrent client programmed in C++ / Qt
 	URL:=https://www.qbittorrent.org/
@@ -53,16 +56,33 @@ define Package/qbittorrent/description
   well as many features.
 endef
 
-CONFIGURE_ARGS += \
-	--disable-gui \
-	--enable-stacktrace=no \
-	--with-boost=$(STAGING_DIR)/usr
+CMAKE_OPTIONS += \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_CXX_STANDARD=17 \
+	-DQT6=ON \
+	-DSTACKTRACE=OFF \
+	-DWEBUI=ON \
+	-DGUI=OFF \
+	-DVERBOSE_CONFIGURE=ON \
+	-DQT_ADDITIONAL_PACKAGES_PREFIX_PATH=$(STAGING_DIR_HOSTPKG)
 
-MAKE_VARS += \
-	INSTALL_ROOT="$(PKG_INSTALL_DIR)"
+ifdef CONFIG_USE_MIPS16
+  TARGET_CFLAGS += -minterlink-mips16
+endif
 
+ifdef CONFIG_USE_GLIBC
+  TARGET_LDFLAGS += -ldl -lrt -lpthread
+endif
 
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
+TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
+TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -flto
+
+ifeq ($(ARCH),i386)
+  ifneq ($(findstring pentium-mmx,$(CONFIG_CPU_TYPE)),)
+    TARGET_CFLAGS := $(filter-out -flto,$(TARGET_CFLAGS))
+    TARGET_LDFLAGS := $(filter-out -flto,$(TARGET_LDFLAGS))
+  endif
+endif
 
 define Package/qbittorrent/conffiles
 /etc/config/qbittorrent

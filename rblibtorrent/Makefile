@@ -1,15 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rblibtorrent
-PKG_VERSION:=1.2.15
-PKG_RELEASE=1
+PKG_VERSION:=2.0.6
+PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/arvidn/libtorrent.git
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=9c5b26b8d9bdb168256566a2986c563187638e5a
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_MIRROR_HASH:=15c9d37a56cf09b22b9d1eeec8a0c21eff7c9fb6b30b04c4cba9a61d5201d57a
+PKG_SOURCE:=libtorrent-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/arvidn/libtorrent/tar.gz/v$(PKG_VERSION)?
+PKG_HASH:=75b17d9db3adf0da5896edeaff4db3879f38ee66be953dc9567089db83a070be
+PKG_BUILD_DIR:=$(BUILD_DIR)/libtorrent-$(PKG_VERSION)
 
 PKG_LICENSE:=BSD
 PKG_LICENSE_FILES:=COPYING
@@ -19,50 +17,58 @@ PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/rblibtorrent
   SECTION:=libs
   CATEGORY:=Libraries
-  TITLE:=Rasterbar BitTorrent library
-  URL:=https://www.libtorrent.org/
-  DEPENDS:=+libgcc +libstdcpp +libopenssl +boost +boost-system +boost-chrono +boost-random
-  MAINTAINER:=Arvid Norberg <arvid@libtorrent.org>
+  TITLE:=C++ bittorrent library by Rasterbar Software
+  URL:=https://www.libtorrent.org
+  DEPENDS:=+boost +boost-system +libatomic +libc +libgcc +libopenssl +libstdcpp +USE_GLIBC:libpthread
+  ABI_VERSION:=2.0
 endef
 
 define Package/rblibtorrent/description
-Rasterbar libtorrent is a C++ library that aims to be a good alternative to
-all the other bittorrent implementations around. It is a library and not a
-full featured client, although it comes with a working example client.
+  Rasterbar libtorrent is a C++ library that aims to be a good alternative to
+  all the other bittorrent implementations around. It is a library and not a
+  full featured client, although it comes with a working example client.
 endef
 
-TARGET_CFLAGS += $(if $(CONFIG_SOFT_FLOAT),-DBOOST_NO_FENV_H) -fPIC
-
-EXTRA_CXXFLAGS += $(if $(CONFIG_GCC_VERSION_4_8),-std=gnu++11,-std=gnu++14)
-
-TARGET_LDFLAGS += -lstdc++
-
-CONFIGURE_ARGS += \
-	--disable-debug \
-	--disable-rpath \
-	--enable-encryption \
-	--enable-deprecated-functions \
-	--with-gnu-ld \
-	--with-openssl=$(STAGING_DIR)/usr \
-	--with-boost=$(STAGING_DIR)/usr \
-	--with-libiconv \
-	--with-libiconv-prefix=$(ICONV_PREFIX)
-
-define Build/Configure
-	cd $(PKG_BUILD_DIR) ; \
-		sh autotool.sh
-	$(call Build/Configure/Default)
+TRY_SIGNAL_VERSION:=751a7e5a5be14892bcfdff1e63c653bcbf71cf39
+TRY_SIGNAL_FILE:=$(PKG_NAME)-try_signal-$(TRY_SIGNAL_VERSION).tar.xz
+define Download/try_signal
+	VERSION:=$(TRY_SIGNAL_VERSION)
+	SUBDIR:=deps/try_signal
+	FILE:=$(TRY_SIGNAL_FILE)
+	URL:=https://github.com/arvidn/try_signal.git
+	MIRROR_HASH:=32a432e35e81c79f21c49744f00696c112e0deab45d15d91c61ceb63fe25a5f8
+	PROTO:=git
 endef
+
+$(eval $(call Download,try_signal))
+
+define Build/Prepare
+	$(Build/Prepare/Default)
+	xzcat $(DL_DIR)/$(TRY_SIGNAL_FILE) | tar -C $(PKG_BUILD_DIR) $(TAR_OPTIONS)
+endef
+
+TARGET_CFLAGS += $(FPIC) -ffunction-sections -fdata-sections -flto
+TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -flto
+
+CMAKE_OPTIONS += \
+	-DBUILD_SHARED_LIBS=ON \
+	-DCMAKE_BUILD_TYPE=Release \
+	-Ddeprecated-functions=OFF \
+	-Dlogging=OFF \
+	-DCMAKE_CXX_STANDARD=17 \
+	-Dpython-bindings=$(if $(CONFIG_PACKAGE_python3-libtorrent),ON,OFF) \
+	-Dpython-egg-info=$(if $(CONFIG_PACKAGE_python3-libtorrent),ON,OFF)
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) $(PKG_INSTALL_DIR)/usr/include/libtorrent $(1)/usr/include/
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libtorrent-rasterbar.{a,so*} $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libtorrent-rasterbar.so* $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libtorrent-rasterbar.pc $(1)/usr/lib/pkgconfig/
 endef

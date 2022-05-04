@@ -7,8 +7,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qtbase
-PKG_BASE:=5.15
-PKG_BUGFIX:=2
+PKG_BASE:=6.2
+PKG_BUGFIX:=4
 PKG_VERSION:=$(PKG_BASE).$(PKG_BUGFIX)
 PKG_RELEASE:=1
 
@@ -18,27 +18,37 @@ PKG_SOURCE_URL:= \
 		http://master.qt.io/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules \
 		http://mirrors.tuna.tsinghua.edu.cn/qt/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules \
 		http://qt.mirror.constant.com/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules
-PKG_HASH:=909fad2591ee367993a75d7e2ea50ad4db332f05e1c38dd7a5a274e156a4e0f8
+PKG_HASH:=d9924d6fd4fa5f8e24458c87f73ef3dfc1e7c9b877a5407c040d89e6736e2634
 
+HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)-everywhere-src-$(PKG_VERSION)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-everywhere-src-$(PKG_VERSION)
+
+PKG_BUILD_DEPENDS:=qtbase/host
 
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
 PKG_CPE_ID:=cpe:/a:qt:qt
 
+CMAKE_INSTALL:=1
+
+# Force to use strip instead of sstrip
+STRIP:=$(TARGET_CROSS)strip $(call qstrip,$(CONFIG_STRIP_ARGS))
+
+include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/qtbase/Default
 	SECTION:=libs
 	CATEGORY:=Libraries
-	SUBMENU:=Qt5
+	SUBMENU:=Qt6
 	TITLE:=qtbase
 	URL:=http://qt-project.org
-	DEPENDS:=+libgcc +libstdcpp @!LINUX_2_6_36
+	DEPENDS:=+libc +libgcc +libstdcpp +USE_GLIBC:librt +USE_GLIBC:libpthread @!LINUX_2_6_36 @!(ARM&&CPU_32v4)
 endef
 
 define Package/qtbase/description
-  This package provides the Qt5 libraries.
+  This package provides the Qt6 libraries.
 
   Qt is a cross-platform application development framework for desktop, embedded and mobile.
   Supported Platforms include Linux, OS X, Windows, VxWorks, QNX, Android, iOS, BlackBerry,
@@ -50,152 +60,177 @@ define Package/qtbase/description
   - core
   - network
   - xml
+  - sql
 endef
 
 define Package/qtbase
-	$(call Package/qtbase/Default)
-	TITLE+=all libs
-	DEPENDS+=$(QTBASE_DEPENDS)
-endef
-
-define Package/qtbase/install
-	true
+  $(call Package/qtbase/Default)
+  HIDDEN:=1
 endef
 
 define Package/qtbase/config
-	config QT5_INCLUDE_ATOMIC
-		bool "Depends on libatomic"
-		default y if !(arm_v7 || ARCH_64BIT || TARGET_x86)
-		default n
+menu "qtbase"
+	comment "Qtbase Libraries"
+
+	$(foreach lib,$(QTBASE_LIBS),
+	config PACKAGE_libqt6$(lib)
+		tristate "libqt6$(lib)"
+		default m if ALL
 		help
-			Check this options to add the libatomic to the dependences.
-			- You'd better to confirm whether your compiler need the external libatomic.
-			Otherwise, it is not recommended to modify this option mannually.
-
-	menu "Select Qtbase Libraries"
-		comment "Qtbase Libraries"
-
-		$(foreach lib,$(QTBASE_LIBS),
-		config PACKAGE_qt5-$(lib)
-			prompt "Qtbase $(lib) library."
-			default m if ALL
-		)
-	endmenu
+		$(Package/libqt6$(lib)/description)
+	)
+endmenu
 endef
 
-PKG_CONFIG_DEPENDS = CONFIG_QT5_INCLUDE_ATOMIC
+#LBITS = $(shell $(TARGET_CC) -dM -E - </dev/null | grep -q "__LP64__" && echo 64 || echo 32)
+#
+#ifeq ($(LBITS),64)
+#    export USE_64=1
+#endif
 
-EXTRA_CFLAGS += $(FPIC) -ffunction-sections -fdata-sections -flto
-EXTRA_LDFLAGS += -Wl,--gc-sections,--as-needed
+ifeq ($(CONFIG_CPU_TYPE),"xscale")
+  TARGET_CFLAGS+= -mfloat-abi=softfp
+endif
 
-CONFIGURE_ARGS = \
-		-sysroot $(STAGING_DIR) \
-		-hostprefix $(STAGING_DIR_HOSTPKG) \
-		-extprefix $(STAGING_DIR)/usr \
-		-prefix /usr \
-		-archdatadir /usr/share/Qt \
-		-datadir /usr/share/Qt \
-		-device linux-generic-g++ \
-		-device-option CROSS_COMPILE="$(TARGET_CROSS)" \
-		-device-option COMPILER_FLAGS="$(TARGET_CFLAGS) $(EXTRA_CFLAGS) $(TARGET_CPPFLAGS) $(EXTRA_CPPFLAGS)" \
-		-device-option LINKER_FLAGS="$(TARGET_LDFLAGS) $(EXTRA_LDFLAGS)" \
-		-confirm-license \
-		-opensource \
-		-release \
-		-shared \
-		-strip \
-		-no-rpath \
-		-no-use-gold-linker \
-		-ltcg \
-		-mimetype-database \
-		-openssl-linked \
-		-qt-doubleconversion \
-		-system-pcre \
-		-system-zlib \
-		$(if $(findstring i386,$(ARCH)),-no-sse2 -no-sse4.1) \
-		-no-angle \
-		-no-cups \
-		-no-dbus \
-		-no-directfb \
-		-no-dtls\
-		-no-egl \
-		-no-eglfs \
-		-no-freetype \
-		-no-gbm \
-		-no-glib \
-		-no-gtk \
-		-no-gui \
-		-no-harfbuzz \
-		-no-iconv \
-		-no-icu \
-		-no-kms \
-		-no-libjpeg \
-		-no-libmd4c \
-		-no-libpng \
-		-no-libudev \
-		-no-mtdev \
-		-no-opengl \
-		-no-opengles3 \
-		-no-openvg \
-		-no-pch \
-		-no-slog2 \
-		-sql-sqlite \
-		-no-trace \
-		-no-tslib \
-		-no-vulkan \
-		-no-widgets \
-		-no-xcb \
-		-no-xkbcommon \
-		-no-zstd \
-		-no-compile-examples \
-		-no-feature-concurrent \
-		-no-feature-gssapi \
-		-no-feature-testlib \
-		-make libs \
-		-nomake examples \
-		-nomake tests \
-		-nomake tools \
-		-v 
+ifdef CONFIG_USE_GLIBC
+  TARGET_LDFLAGS += -ldl -lrt -lpthread
+endif
 
+TARGET_CFLAGS += $(FPIC) -ffunction-sections -fdata-sections -flto
+TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -flto
 
-define Build/Compile
-	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR)
-endef
+CMAKE_SHARED_LDFLAGS:=$(filter-out -Wl$(comma)-Bsymbolic-functions,$(CMAKE_SHARED_LDFLAGS))
 
-define Build/InstallDev
-	$(MAKE) -C $(PKG_BUILD_DIR) install
-endef
+CMAKE_HOST_OPTIONS += \
+	-DQT_FORCE_MIN_CMAKE_VERSION_FOR_BUILDING_QT=3.19 \
+	-DCMAKE_STAGING_PREFIX=$(STAGING_DIR_HOSTPKG) \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DFEATURE_optimize_size=ON \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DFEATURE_concurrent=OFF \
+	-DFEATURE_dbus=OFF \
+	-DFEATURE_gui=OFF \
+	-DFEATURE_sql=OFF \
+	-DFEATURE_testlib=OFF \
+	-DFEATURE_zstd=OFF \
+	-DINPUT_openssl=no
+
+CMAKE_OPTIONS += \
+	-DQT_FORCE_MIN_CMAKE_VERSION_FOR_BUILDING_QT=3.19 \
+	-DQT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT=3.19 \
+	-DCMAKE_SYSROOT=$(STAGING_DIR) \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DINSTALL_ARCHDATADIR=/usr/share/Qt6 \
+	-DINSTALL_DATADIR=/usr/share/Qt6 \
+	-DQT_HOST_PATH=$(STAGING_DIR_HOSTPKG) \
+	-DQT_QMAKE_TARGET_MKSPEC=devices/linux-generic-g++ \
+	-DQT_QMAKE_DEVICE_OPTIONS=CROSS_COMPILE="$(TARGET_CROSS);COMPILER_FLAGS=$(TARGET_CFLAGS) $(EXTRA_CFLAGS) $(TARGET_CPPFLAGS) $(EXTRA_CPPFLAGS);LINKER_FLAGS=$(TARGET_LDFLAGS) $(EXTRA_LDFLAGS)" \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DBUILD_SHARED_LIBS=ON \
+	-DFEATURE_optimize_size=ON \
+	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+	-DCMAKE_SKIP_RPATH=TRUE \
+	-DFEATURE_system_zlib=ON \
+	-DFEATURE_cups=OFF \
+	-DFEATURE_dbus=OFF \
+	-DFEATURE_libudev=OFF \
+	-DFEATURE_widgets=OFF \
+	-DFEATURE_zstd=OFF \
+	-DFEATURE_concurrent=OFF \
+	-DFEATURE_testlib=OFF \
+	-DQT_BUILD_EXAMPLES=OFF \
+	-DQT_BUILD_TESTS=OFF \
+	\
+	-DFEATURE_system_doubleconversion=OFF \
+	-DFEATURE_system_pcre2=ON \
+	-DFEATURE_mimetype_database=ON \
+	-DFEATURE_glib=OFF \
+	-DFEATURE_icu=OFF \
+	\
+	-DFEATURE_gui=OFF \
+	-DFEATURE_freetype=OFF \
+	-DFEATURE_gbm=OFF \
+	-DFEATURE_harfbuzz=OFF \
+	-DFEATURE_jpeg=OFF \
+	-DFEATURE_png=OFF \
+	-DFEATURE_mtdev=OFF \
+	-DINPUT_opengl=no \
+	-DFEATURE_tslib=OFF \
+	-DFEATURE_xcb=OFF \
+	-DFEATURE_xcb_xlib=OFF \
+	-DFEATURE_xkbcommon=OFF \
+	\
+	-DINPUT_openssl=linked \
+	-DFEATURE_libproxy=OFF \
+	-DFEATURE_gssapi=OFF \
+	\
+	-DFEATURE_sql=ON \
+	-DFEATURE_system_sqlite=OFF \
+	-DFEATURE_sql_db2=OFF \
+	-DFEATURE_sql_ibase=OFF \
+	-DFEATURE_sql_mysql=OFF \
+	-DFEATURE_sql_oci=OFF \
+	-DFEATURE_sql_odbc=OFF \
+	-DFEATURE_sql_psql=OFF \
+	\
+	-DQT_BUILD_TOOLS_WHEN_CROSSCOMPILING=OFF \
+	-DLIBATOMIC_LIBS="-latomic"
 
 define Package/qtbase/Default/install
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/lib/libQt5$(shell echo $(2) | sed -e 's/\b[[:alpha:]]/\u&/g').so* $(1)/usr/lib
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libQt6$(shell echo $(2) | sed -e 's/\b[[:alpha:]]/\u&/g').so* $(1)/usr/lib
 endef
 
+# 1: library short name
+# 2: dependencies on other qtbase libraries (short name)
+# 3: dependencies on other packages
 define DefineQtbaseLibrary
-  QTBASE_DEPENDS+=+qt5-$(1)
-
+  PKG_CONFIG_DEPENDS+=CONFIG_PACKAGE_libqt6$(1)
   QTBASE_LIBS+=$(1)
 
-  define Package/qt5-$(1)
+  define Package/libqt6$(1)
     $(call Package/qtbase/Default)
-    TITLE+=$(1)
-    DEPENDS+=$(foreach lib,$(2),+qt5-$(lib)) $(3)
+    TITLE+=$(1) library
+    DEPENDS+=$(foreach lib,$(2),+libqt6$(lib)) $(3)
+    ABI_VERSION:=6
     HIDDEN:=1
   endef
 
-  define Package/qt5-$(1)/description
-    This package contains the qt5 $(1) library.
+  define Package/libqt6$(1)/description
+    This package contains the qtbase $(1) library.
   endef
 
-  define Package/qt5-$(1)/install
+  define Package/libqt6$(1)/install
     $(call Package/qtbase/Default/install,$$(1),$(1))
   endef
 endef
 
-$(eval $(call DefineQtbaseLibrary,core,,+QT5_INCLUDE_ATOMIC:libatomic +libpcre2-16 +zlib))
+$(eval $(call DefineQtbaseLibrary,core,,+libatomic +libpcre2-16 +zlib))
 $(eval $(call DefineQtbaseLibrary,network,core,+libopenssl +zlib))
 $(eval $(call DefineQtbaseLibrary,xml,core,))
-$(eval $(call DefineQtbaseLibrary,sql,core))
+$(eval $(call DefineQtbaseLibrary,sql,core,))
 
-$(foreach lib,$(QTBASE_LIBS),$(eval $(call BuildPackage,qt5-$(lib))))
+define Package/qtbase/Plugins/install
+	$(INSTALL_DIR) $(1)/usr/share/Qt6/plugins/$(2)
+	$(CP) $(PKG_INSTALL_DIR)/usr/share/Qt6/plugins/$(2)/lib$(3).so $(1)/usr/share/Qt6/plugins/$(2)
+endef
+
+# 1: plugin directory
+# 2: plugin short name
+# 3: so file name
+# 4: dependencies on other qtbase libraries (short name)
+# 5: dependencies on other packages
+define DefineQtbasePlugin
+  $(call DefineQtbaseLibrary,$(2),$(4),$(5))
+
+  define Package/libqt6$(2)/install
+    $(call Package/qtbase/Plugins/install,$$(1),$(1),$(3))
+  endef
+endef
+
+$(eval $(call DefineQtbasePlugin,sqldrivers,sql-sqlite,qsqlite,core sql,+libpcre2-16 +zlib))
+$(eval $(call DefineQtbasePlugin,tls,network-tlsbackend-openssl,qopensslbackend,core network,+libopenssl +libpcre2-16 +zlib))
+
+$(foreach lib,$(QTBASE_LIBS),$(eval $(call BuildPackage,libqt6$(lib))))
+$(eval $(call HostBuild))
 $(eval $(call BuildPackage,qtbase))

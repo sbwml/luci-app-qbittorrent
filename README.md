@@ -1,4 +1,4 @@
-qBittorrent - A BitTorrent client in Qt
+qBittorrent - A BitTorrent client in Qt6
 ------------------------------------------
 
 ## How to build
