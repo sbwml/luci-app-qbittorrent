@@ -5,8 +5,6 @@ program=
 [BitTorrent]
 Session\DefaultSavePath=/tmp
 Session\QueueingSystemEnabled=false
-Session\TempPath=/tmp
-Session\TempPathEnabled=true
 
 [Core]
 AutoDeleteAddedTorrentFile=Never
@@ -50,9 +48,9 @@ WebUI\CustomHTTPHeadersEnabled=false
 WebUI\HTTPS\CertificatePath=
 WebUI\HTTPS\Enabled=false
 WebUI\HTTPS\KeyPath=
-WebUI\HostHeaderValidation=false
-WebUI\LocalHostAuth=false
-WebUI\MaxAuthenticationFailCount=10
+WebUI\HostHeaderValidation=true
+WebUI\LocalHostAuth=true
+WebUI\MaxAuthenticationFailCount=20
 WebUI\Port=8080
 WebUI\ReverseProxySupportEnabled=false
 WebUI\RootFolder=
