@@ -44,7 +44,7 @@ define Package/qtbase/Default
 	SUBMENU:=Qt6
 	TITLE:=qtbase
 	URL:=http://qt-project.org
-	DEPENDS:=+libc +libgcc +libstdcpp +USE_GLIBC:librt +USE_GLIBC:libpthread @!LINUX_2_6_36 @!(ARM&&CPU_32v4)
+	DEPENDS:=+icu +libc +libgcc +libstdcpp +USE_GLIBC:librt +USE_GLIBC:libpthread @!LINUX_2_6_36 @!(ARM&&CPU_32v4)
 endef
 
 define Package/qtbase/description
@@ -145,7 +145,7 @@ CMAKE_OPTIONS += \
 	-DFEATURE_system_pcre2=ON \
 	-DFEATURE_mimetype_database=ON \
 	-DFEATURE_glib=OFF \
-	-DFEATURE_icu=OFF \
+	-DFEATURE_icu=ON \
 	\
 	-DFEATURE_gui=OFF \
 	-DFEATURE_freetype=OFF \
