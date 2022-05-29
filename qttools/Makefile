@@ -7,8 +7,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qttools
-PKG_BASE:=6.2
-PKG_BUGFIX:=4
+PKG_BASE:=6.3
+PKG_BUGFIX:=0
 PKG_VERSION:=$(PKG_BASE).$(PKG_BUGFIX)
 PKG_RELEASE:=1
 
@@ -19,7 +19,7 @@ PKG_SOURCE_URL:= \
 		http://mirrors.tuna.tsinghua.edu.cn/qt/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules \
 		http://qt.mirror.constant.com/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules
 
-PKG_HASH:=17f40689c4a1706a1b7db22fa92f6ab79f7b698a89e100cab4d10e19335f8267
+PKG_HASH:=fce94688ea925782a2879347584991f854630daadba6c52aed6d93e33cd0b19c
 
 HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)-everywhere-src-$(PKG_VERSION)
 
@@ -47,14 +47,12 @@ HOST_CONFIGURE_ARGS = \
 	-no-feature-designer \
 	-no-feature-distancefieldgenerator \
 	-no-feature-kmap2qmap \
-	-no-feature-macdeployqt \
 	-no-feature-pixeltool \
 	-no-feature-qdbus \
 	-no-feature-qev \
 	-no-feature-qtattributionsscanner \
 	-no-feature-qtdiag \
 	-no-feature-qtplugininfo \
-	-no-feature-windeployqt \
 	-- \
 	-DCMAKE_DISABLE_FIND_PACKAGE_Clang=TRUE \
 	-DCMAKE_DISABLE_FIND_PACKAGE_WrapLibClang=TRUE
