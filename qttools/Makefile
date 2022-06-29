@@ -8,7 +8,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qttools
 PKG_BASE:=6.3
-PKG_BUGFIX:=0
+PKG_BUGFIX:=1
 PKG_VERSION:=$(PKG_BASE).$(PKG_BUGFIX)
 PKG_RELEASE:=1
 
@@ -19,7 +19,7 @@ PKG_SOURCE_URL:= \
 		http://mirrors.tuna.tsinghua.edu.cn/qt/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules \
 		http://qt.mirror.constant.com/archive/qt/$(PKG_BASE)/$(PKG_VERSION)/submodules
 
-PKG_HASH:=fce94688ea925782a2879347584991f854630daadba6c52aed6d93e33cd0b19c
+PKG_HASH:=c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1
 
 HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)-everywhere-src-$(PKG_VERSION)
 
