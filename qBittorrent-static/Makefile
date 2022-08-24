@@ -7,17 +7,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qBittorrent-static
-PKG_VERSION:=4.4.3.1_v2.0.7
+PKG_VERSION:=4.4.4_v2.0.7
 PKG_RELEASE=1
 
 STRIP:=true
 
 ifeq ($(ARCH),x86_64)
 	PKG_ARCH:=x86_64
-endif
-
-ifeq ($(ARCH),arm64)
-	PKG_ARCH:=aarch64
 endif
 
 ifeq ($(ARCH),aarch64)
