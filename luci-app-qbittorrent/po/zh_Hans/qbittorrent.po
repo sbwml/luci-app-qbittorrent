@@ -5,7 +5,7 @@ msgid "Running state"
 msgstr "运行状态"
 
 msgid "Open Web Interface"
-msgstr "打开管理页面"
+msgstr "打开 Web 界面"
 
 msgid "qBittorrent is a cross-platform free and open-source BitTorrent client. Default username & password: admin / adminadmin"
 msgstr "qBittorrent 是一个基于 QT 的跨平台的开源 BitTorrent 客户端。默认用户名 & 密码：admin / adminadmin"
