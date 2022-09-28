@@ -20,7 +20,7 @@ PKG_LICENSE:=GPL-2.0+
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:qbittorrent:qbittorrent
 
-PKG_BUILD_DEPENDS:=qttools/host boost
+PKG_BUILD_DEPENDS:=qt6tools/host
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
@@ -35,14 +35,12 @@ define Package/qbittorrent
 	SUBMENU:=BitTorrent
 	DEPENDS:=+USE_GLIBC:librt +USE_GLIBC:libpthread +libgcc +libstdcpp \
 		+rblibtorrent \
-		+libopenssl \
-		+libqt6core \
-		+libqt6network \
-		+libqt6network-tlsbackend-openssl \
-		+libqt6sql \
-		+libqt6sql-sqlite \
-		+libqt6xml \
-		+zlib
+		+libQt6Core \
+		+libQt6Network \
+		+libQt6Sql \
+		+libQt6Xml \
+		+qt6-plugin-libqopensslbackend \
+		+qt6-plugin-libqsqlite
 	TITLE:=bittorrent client programmed in C++ / Qt
 	URL:=https://www.qbittorrent.org/
 	PROVIDES:=qBittorrent
