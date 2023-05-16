@@ -45,8 +45,8 @@ endef
 
 define Download/qbittorrent
   URL:=https://github.com/userdocs/qbittorrent-nox-static/releases/download/release-$(PKG_VERSION)
-  URL_FILE:=$(PKG_ARCH)-cmake-icu-qbittorrent-nox
-  FILE:=qbittorrent-nox
+  URL_FILE:=$(PKG_ARCH)-qbittorrent-nox
+  FILE:=$(PKG_ARCH)-qbittorrent-nox-$(PKG_VERSION)
   HASH:=skip
 endef
 
@@ -55,7 +55,7 @@ endef
 
 define Package/qBittorrent-static/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(DL_DIR)/qbittorrent-nox $(1)/usr/bin
+	$(INSTALL_BIN) $(DL_DIR)/$(PKG_ARCH)-qbittorrent-nox-$(PKG_VERSION) $(1)/usr/bin/qbittorrent-nox
 endef
 
 $(eval $(call Download,qbittorrent))
