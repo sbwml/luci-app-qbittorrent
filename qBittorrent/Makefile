@@ -24,7 +24,6 @@ PKG_BUILD_DEPENDS:=qt6tools/host
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
-PKG_USE_MIPS16:=0
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -56,7 +55,6 @@ endef
 
 CMAKE_OPTIONS += \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_CXX_STANDARD=17 \
 	-DQT6=ON \
 	-DSTACKTRACE=OFF \
 	-DWEBUI=ON \
@@ -64,22 +62,8 @@ CMAKE_OPTIONS += \
 	-DVERBOSE_CONFIGURE=ON \
 	-DQT_ADDITIONAL_PACKAGES_PREFIX_PATH=$(STAGING_DIR_HOSTPKG)
 
-ifdef CONFIG_USE_MIPS16
-  TARGET_CFLAGS += -minterlink-mips16
-endif
-
 ifdef CONFIG_USE_GLIBC
   TARGET_LDFLAGS += -ldl -lrt -lpthread
-endif
-
-TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -flto
-
-ifeq ($(ARCH),i386)
-  ifneq ($(findstring pentium-mmx,$(CONFIG_CPU_TYPE)),)
-    TARGET_CFLAGS := $(filter-out -flto,$(TARGET_CFLAGS))
-    TARGET_LDFLAGS := $(filter-out -flto,$(TARGET_LDFLAGS))
-  endif
 endif
 
 define Package/qbittorrent/conffiles
