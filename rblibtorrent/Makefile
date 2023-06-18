@@ -6,7 +6,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE:=libtorrent-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/arvidn/libtorrent/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=90cd92b6061c5b664840c3d5e151d43fedb24f5b2b24e14425ffbb884ef1798e
+PKG_HASH:=b1edfda1e91c5c93cbffbe26773e7ea0928b2074f9057d943fb519b22b33b5ed
 PKG_BUILD_DIR:=$(BUILD_DIR)/libtorrent-$(PKG_VERSION)
 
 PKG_LICENSE:=BSD
