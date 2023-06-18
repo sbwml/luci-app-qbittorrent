@@ -1,6 +1,6 @@
 --- a/cmake/QtAutoDetect.cmake
 +++ b/cmake/QtAutoDetect.cmake
-@@ -155,32 +155,6 @@ function(qt_auto_detect_android)
+@@ -160,32 +160,6 @@ function(qt_auto_detect_android)
      endif()
  endfunction()
  
@@ -33,7 +33,7 @@
  function(qt_auto_detect_ios)
      if(CMAKE_SYSTEM_NAME STREQUAL iOS)
          message(STATUS "Using internal CMake ${CMAKE_SYSTEM_NAME} toolchain file.")
-@@ -484,7 +458,6 @@ qt_auto_detect_darwin()
+@@ -489,7 +463,6 @@ qt_auto_detect_darwin()
  qt_auto_detect_macos_universal()
  qt_auto_detect_ios()
  qt_auto_detect_android()
