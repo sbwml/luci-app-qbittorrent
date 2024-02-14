@@ -7,12 +7,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qt6tools
-PKG_VERSION:=6.6.1
+PKG_VERSION:=6.6.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=qttools-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/qt/qttools/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=6e5816628a2cdcf4147483f7d088870695af7d9770d4e2b68a0765fda5b3e12a
+PKG_HASH:=75075646c05635ade8bf91b64287f8ec90572a9ac559bf3fc744c461e24db0e5
 
 HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/qttools-$(PKG_VERSION)
 
