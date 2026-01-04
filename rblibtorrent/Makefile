@@ -46,9 +46,8 @@ CMAKE_OPTIONS += \
 	-DCMAKE_BUILD_TYPE=Release \
 	-Ddeprecated-functions=OFF \
 	-Dlogging=OFF \
-	-DCMAKE_CXX_STANDARD=17 \
-	-Dpython-bindings=$(if $(CONFIG_PACKAGE_python3-libtorrent),ON,OFF) \
-	-Dpython-egg-info=$(if $(CONFIG_PACKAGE_python3-libtorrent),ON,OFF)
+	-Dpython-bindings=OFF \
+	-Dpython-egg-info=OFF
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
